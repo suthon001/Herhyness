@@ -1,0 +1,37 @@
+{
+  "id": "13eaca6f-c32e-4ab9-983d-3fb191c46060",
+  "name": "MAISON ROYAL Extension",
+  "publisher": "Yokogawa Votiva Solutions Co., Ltd.",
+  "version": "1.0.0.9",
+  "brief": "",
+  "description": "Include ALL Localized",
+  "privacyStatement": "",
+  "EULA": "",
+  "help": "",
+  "url": "https://www.votivasoft.com/",
+  "logo": "./YVS-logo-01.jpg",
+  "dependencies": [
+    {
+      "id": "c80e25ac-8f80-4d65-85b9-211b292609b8",
+      "name": "Thai Localized",
+      "publisher": "Yokogawa Votiva Solutions Co., Ltd.",
+      "version": "22.0.0.36"
+    }
+  ],
+  "screenshots": [],
+  "platform": "1.0.0.0",
+  "application": "22.0.0.0",
+  "target": "Cloud",
+  "idRanges": [
+    {
+      "from": 70000,
+      "to": 70100
+    }
+  ],
+  "resourceExposurePolicy": {
+    "allowDebugging": true,
+    "allowDownloadingSource": false,
+    "includeSourceInSymbolFile": false
+  },
+  "runtime": "11.0"
+}
