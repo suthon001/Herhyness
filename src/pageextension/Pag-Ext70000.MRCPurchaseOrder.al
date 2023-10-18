@@ -12,7 +12,7 @@ pageextension 70000 "MRC Purchase Order" extends "Purchase Order"
                 Caption = 'Purchase Order';
                 Image = PrintReport;
                 ApplicationArea = all;
-                PromotedCategory = Category10;
+                PromotedCategory = Report;
                 Promoted = true;
                 PromotedIsBig = true;
                 ToolTip = 'Executes the Purchase Order action.';
