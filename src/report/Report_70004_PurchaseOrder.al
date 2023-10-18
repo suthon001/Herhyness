@@ -14,6 +14,7 @@ report 70004 "MRC Purchase Order"
             DataItemTableView = sorting("Document Type", "No.");
             RequestFilterFields = "Document Type", "No.";
             column(Shortcut_Dimension_1_Code; "Shortcut Dimension 1 Code") { }
+            column(Shortcut_Dimension_2_Code; "Shortcut Dimension 2 Code") { }
             column(companyInfor_Picture; companyInfor.Picture) { }
             column(PostingDate; format("Posting Date", 0, '<Day,2>/<Month,2>/<Year4>')) { }
             column(DocumentDate; format("Document Date", 0, '<Day,2>/<Month,2>/<Year4>')) { }
