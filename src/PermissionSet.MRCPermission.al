@@ -10,5 +10,6 @@ permissionset 70000 "MRC Permission"
         report "MRC Sales Credit Memo (Post)" = X,
         report "MRC Purchase Order" = X,
         report "MRC Report Sales Invoice" = X,
+        report "MRC Import OB Item Journal" = X,
         report "MRC Report Sales Credit Memo" = X;
 }
