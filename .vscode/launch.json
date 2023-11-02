@@ -15,6 +15,16 @@
             "schemaUpdateMode": "ForceSync",
             "enableSqlInformationDebugger": true,
             "tenant": "4ef4cef4-feda-4adf-a799-109703e11237"
-        }
+        },
+        {
+            "name": "snapshotInitialize: Microsoft production cloud",
+            "type": "al",
+            "request": "snapshotInitialize",
+            "environmentType": "Production",
+            "environmentName": "production",
+            "breakOnNext": "WebClient",
+            "executionContext": "DebugAndProfile",
+            "tenant": "4ef4cef4-feda-4adf-a799-109703e11237"
+      }
     ]
 }
