@@ -3,7 +3,7 @@
 /// </summary>
 page 70001 "MRC Posted Item Journal Lines"
 {
-    Caption = 'Posted ItemJournal Lines';
+    Caption = 'Posted Item Journal Lines';
     SourceTable = "MRC Posted Item Journal Line";
     SourceTableView = sorting("Journal Template Name", "Journal Batch Name", "Line No.");
     InsertAllowed = false;

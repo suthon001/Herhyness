@@ -9,59 +9,75 @@ table 70000 "MRC Interface Log Entry"
     DrillDownPageId = "MRC Interface Log Entries";
     fields
     {
-        field(1; "Transaction ID"; Integer)
+        field(1; "Entry No."; Integer)
         {
-            Caption = 'Transaction ID';
+            Caption = 'Entry No.';
             Editable = false;
         }
-        field(2; "Action Page"; Enum "MRC Interface Document Type")
+        field(2; "Method Type"; Option)
+        {
+            Caption = 'Method Type';
+            OptionMembers = " ","Insert","Update","Delete";
+            OptionCaption = ' ,Insert,Update,Delete';
+            Editable = false;
+        }
+        field(3; "Action Page"; Enum "MRC Interface Document Type")
         {
             Caption = 'Action Page';
         }
-        field(3; "Document No."; Code[20])
-        {
-            Caption = 'Document No.';
-        }
-        field(4; "PDA Entry Ref."; Integer)
-        {
-            Caption = 'PDA Entry Ref.';
-        }
-        field(5; "Status"; Option)
-        {
-            Caption = 'Status';
-            OptionMembers = "Success","Failed";
-            OptionCaption = 'Success,Failed';
-        }
-        field(6; "Method Type"; Option)
-        {
-            Caption = 'Method Type';
-            OptionMembers = "Insert","Update","Delete";
-            OptionCaption = 'Insert,Update,Delete';
-        }
-        field(7; "Direction"; Option)
+        field(4; "Direction"; Option)
         {
             Caption = 'Direction';
             OptionMembers = "Inbound","Outbound";
             OptionCaption = 'Inbound,Outbound';
         }
-        field(8; "Description"; text[2047])
+        field(5; "PDA Entry Ref."; Integer)
         {
-            Caption = 'Description';
-            DataClassification = CustomerContent;
+            Caption = 'PDA Entry Ref.';
         }
-        field(9; "Json Log"; Blob)
+        field(6; "Status"; Option)
+        {
+            Caption = 'Status';
+            OptionMembers = "Success","Failed";
+            OptionCaption = 'Success,Failed';
+        }
+        field(7; "Json Log"; Blob)
         {
             Caption = 'Json Format';
         }
-        field(10; "Response Log"; Blob)
+        field(8; "Response Log"; Blob)
         {
             Caption = 'Response Log';
+        }
+        field(9; "Interface Path"; text[250])
+        {
+            Caption = 'Interface Path';
+        }
+        field(10; "Primary Key Caption"; text[250])
+        {
+            Caption = 'Primary Key Caption';
+        }
+        field(11; "Primary Key 1"; text[100])
+        {
+            Caption = 'Primary Key 1';
+        }
+        field(12; "Primary Key 2"; text[100])
+        {
+            Caption = 'Primary Key 2';
+        }
+        field(13; "Primary Key 3"; text[100])
+        {
+            Caption = 'Primary Key 3';
+        }
+        field(14; "Document No."; code[20])
+        {
+            Caption = 'Document No.';
         }
 
     }
     keys
     {
-        key(PK; "Transaction ID")
+        key(PK; "Entry No.")
         {
             Clustered = true;
         }
@@ -75,10 +91,38 @@ table 70000 "MRC Interface Log Entry"
         ltInterfaceLog: Record "MRC Interface Log Entry";
     begin
         ltInterfaceLog.reset();
-        ltInterfaceLog.SetCurrentKey("Transaction ID");
+        ltInterfaceLog.SetCurrentKey("Entry No.");
         ltInterfaceLog.ReadIsolation := IsolationLevel::ReadCommitted;
         if ltInterfaceLog.FindLast() then
-            exit(ltInterfaceLog."Transaction ID" + 1);
+            exit(ltInterfaceLog."Entry No." + 1);
         exit(1);
+    end;
+
+    /// <summary>
+    /// GetJsonLog.
+    /// </summary>
+    /// <returns>Return variable JsonLog of type Text.</returns>
+    procedure GetJsonLog() JsonLog: Text
+    var
+        TypeHelper: Codeunit "Type Helper";
+        InStream: InStream;
+    begin
+        CalcFields("Json Log");
+        "Json Log".CreateInStream(InStream, TEXTENCODING::UTF8);
+        exit(TypeHelper.TryReadAsTextWithSepAndFieldErrMsg(InStream, TypeHelper.LFSeparator(), FieldName("Json Log")));
+    end;
+
+    /// <summary>
+    /// GetResponseLog.
+    /// </summary>
+    /// <returns>Return variable ResponseLog of type Text.</returns>
+    procedure GetResponseLog() ResponseLog: Text
+    var
+        TypeHelper: Codeunit "Type Helper";
+        InStream: InStream;
+    begin
+        CalcFields("Response Log");
+        "Response Log".CreateInStream(InStream, TEXTENCODING::UTF8);
+        exit(TypeHelper.TryReadAsTextWithSepAndFieldErrMsg(InStream, TypeHelper.LFSeparator(), FieldName("Response Log")));
     end;
 }

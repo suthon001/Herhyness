@@ -923,6 +923,7 @@ table 70001 "MRC Posted Item Journal Line"
         postedItemLine: Record "MRC Posted Item Journal Line";
     begin
         postedItemLine.reset();
+        postedItemLine.SetCurrentKey("Entry No.");
         postedItemLine.ReadIsolation := IsolationLevel::ReadCommitted;
         if postedItemLine.FindLast() then
             EXIT(postedItemLine."Entry No." + 1);

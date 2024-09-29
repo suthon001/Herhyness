@@ -1,7 +1,7 @@
 /// <summary>
-/// TableExtension MRC General Ledger Setup (ID 70007) extends Record General Ledger Setup.
+/// TableExtension MRC Inventory Setup (ID 70007) extends Record Inventory Setup.
 /// </summary>
-tableextension 70007 "MRC General Ledger Setup" extends "General Ledger Setup"
+tableextension 70007 "MRC Inventory Setup" extends "Inventory Setup"
 {
     fields
     {

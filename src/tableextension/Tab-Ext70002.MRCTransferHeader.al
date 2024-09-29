@@ -57,6 +57,12 @@ tableextension 70002 "MRC Transfer Header" extends "Transfer Header"
             Caption = 'Transaction ID';
             Editable = false;
         }
+        field(70010; "MRC Interface"; Boolean)
+        {
+            Caption = 'Interface';
+            DataClassification = CustomerContent;
+            Editable = false;
+        }
         modify("Transfer-from Code")
         {
             trigger OnAfterValidate()
@@ -72,4 +78,11 @@ tableextension 70002 "MRC Transfer Header" extends "Transfer Header"
             end;
         }
     }
+    trigger OnInsert()
+    var
+        ltNoSeries: Record "No. Series";
+    begin
+        if ltNoSeries.GET(rec."No. Series") then
+            rec."MRC Interface" := ltNoSeries."MRC Interface";
+    end;
 }

@@ -70,11 +70,6 @@ pageextension 70014 "MRC Item Journal" extends "Item Journal"
                 ApplicationArea = all;
                 ToolTip = 'Specifies the value of the Shipping Agent field.';
             }
-            field("MRC Interface"; rec."MRC Interface")
-            {
-                ApplicationArea = all;
-                ToolTip = 'Specifies the value of the Interface field.';
-            }
             field("MRC Interface Completed"; rec."MRC Interface Completed")
             {
                 ApplicationArea = all;
@@ -94,15 +89,59 @@ pageextension 70014 "MRC Item Journal" extends "Item Journal"
         {
             action(InterfaceToPDA)
             {
-                Caption = 'Interface to PDA';
+                Caption = 'Submit to PDA';
                 Image = Interaction;
                 ApplicationArea = all;
-                ToolTip = 'Executes the Interface to PDA action.';
+                ToolTip = 'Executes the Submit to PDA action.';
                 trigger OnAction()
                 var
+                    ItemJournalLine: Record "Item Journal Line";
+                    MRCInterfaceLogEntry: Record "MRC Interface Log Entry";
                     MRCFunc: Codeunit "MRC Func";
                 begin
-                    MRCFunc.InterfaceItemJournalToPDA(rec);
+                    ItemJournalLine.reset();
+                    ItemJournalLine.copy(rec);
+                    CurrPage.SetSelectionFilter(ItemJournalLine);
+                    if ItemJournalLine.FindSet() then
+                        repeat
+                            ItemJournalLine.TestFieldAPI();
+                        until ItemJournalLine.Next() = 0;
+                    ItemJournalLine.reset();
+                    ItemJournalLine.copy(rec);
+                    CurrPage.SetSelectionFilter(ItemJournalLine);
+                    if ItemJournalLine.FindSet() then
+                        repeat
+                            MRCFunc.InterfaceItemJournalToPDA(rec);
+                        until ItemJournalLine.Next() = 0;
+
+                    MRCInterfaceLogEntry.reset();
+                    MRCInterfaceLogEntry.SetRange("Action Page", MRCInterfaceLogEntry."Action Page"::"Item Journal");
+                    MRCInterfaceLogEntry.SetRange("Primary Key 1", rec."Journal Template Name");
+                    MRCInterfaceLogEntry.SetRange("Primary Key 2", rec."Journal Batch Name");
+                    MRCInterfaceLogEntry.SetRange("Document No.", rec."Document No.");
+                    page.Run(0, MRCInterfaceLogEntry);
+                end;
+            }
+            action(ClearInterface)
+            {
+                Caption = 'Clear Interface';
+                Image = Cancel;
+                ApplicationArea = all;
+                ToolTip = 'Executes the Clear Interface  action.';
+                trigger OnAction()
+                var
+                    ItemJournalLine: Record "Item Journal Line";
+                begin
+                    ItemJournalLine.reset();
+                    ItemJournalLine.copy(rec);
+                    CurrPage.SetSelectionFilter(ItemJournalLine);
+                    if ItemJournalLine.FindSet() then
+                        repeat
+                            ItemJournalLine."MRC Interface Completed" := false;
+                            ItemJournalLine."MRC Send DateTime" := 0DT;
+                            ItemJournalLine.Modify();
+                        until ItemJournalLine.Next() = 0;
+
                 end;
             }
             action(LogInterfaceToPDA)
@@ -116,8 +155,8 @@ pageextension 70014 "MRC Item Journal" extends "Item Journal"
                     MRCInterfaceLogEntry: Record "MRC Interface Log Entry";
                 begin
                     MRCInterfaceLogEntry.reset();
-                    MRCInterfaceLogEntry.SetRange("Document Type", MRCInterfaceLogEntry."Document Type"::"Item Journal");
-                    MRCInterfaceLogEntry.SetRange("Journal Batch Name", rec."Journal Batch Name");
+                    MRCInterfaceLogEntry.SetRange("Primary Key 1", rec."Journal Template Name");
+                    MRCInterfaceLogEntry.SetRange("Primary Key 2", rec."Journal Batch Name");
                     MRCInterfaceLogEntry.SetRange("Document No.", rec."Document No.");
                     page.Run(0, MRCInterfaceLogEntry);
                 end;
@@ -127,8 +166,11 @@ pageextension 70014 "MRC Item Journal" extends "Item Journal"
         {
             group(InterfaceTOPDAPromote)
             {
-                Caption = 'Interface To PDA';
+                Caption = 'API Management';
                 actionref(InterfaceToPDA_Promoted; InterfaceToPDA)
+                {
+                }
+                actionref(ClearInterface_Promoted; ClearInterface)
                 {
                 }
                 actionref(LogInterfaceToPDA_Promoted; LogInterfaceToPDA)

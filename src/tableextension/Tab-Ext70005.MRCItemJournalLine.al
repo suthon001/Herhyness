@@ -101,4 +101,17 @@ tableextension 70005 "MRC Item Journal Line" extends "Item Journal Line"
         }
 
     }
+    /// <summary>
+    /// TestFieldAPI.
+    /// </summary>
+    procedure TestFieldAPI()
+    begin
+        rec.TestField("Posting Date");
+        rec.TestField("Document No.");
+        rec.TestField("Item No.");
+        rec.TestField("Unit of Measure Code");
+        rec.TestField(Quantity);
+        rec.TestField("Location Code");
+        rec.TestField("MRC Interface Completed", false);
+    end;
 }

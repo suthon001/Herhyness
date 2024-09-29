@@ -5,6 +5,53 @@ codeunit 70000 "MRC Func"
 {
 
     /// <summary>
+    /// JobQueueItemJournal.
+    /// </summary>
+    procedure JobQueueItemJournal()
+    var
+        ltITemJournalTemplate: Record "Item Journal Template";
+        ltITemJournalLine: Record "Item Journal Line";
+    begin
+        ltITemJournalTemplate.reset();
+        ltITemJournalTemplate.SetRange("MRC Interface", true);
+        if ltITemJournalTemplate.FindSet() then
+            repeat
+                ltITemJournalLine.reset();
+                ltITemJournalLine.SetCurrentKey("Journal Template Name", "Journal Batch Name", "Line No.");
+                ltITemJournalLine.SetRange("Journal Template Name", ltITemJournalTemplate.Name);
+                ltITemJournalLine.SetRange("MRC Interface", false);
+                ltITemJournalLine.SetFilter("Item No.", '<>%1', '');
+                ltITemJournalLine.SetFilter("Quantity", '<>%1', 0);
+                ltITemJournalLine.SetFilter("Location Code", '<>%1', '');
+                ltITemJournalLine.SetRange("YVS Approve Status", ltITemJournalLine."YVS Approve Status"::Released);
+                if ltITemJournalLine.FindSet() then
+                    repeat
+                        InterfaceItemJournalToPDA(ltITemJournalLine);
+                    until ltITemJournalLine.Next() = 0;
+            until ltITemJournalTemplate.Next() = 0;
+    end;
+
+
+    /// <summary>
+    /// JobQueueTransferOrder.
+    /// </summary>
+    procedure JobQueueTransferOrder()
+    var
+        TransferOrder: Record "Transfer Header";
+    begin
+        TransferOrder.reset();
+        TransferOrder.SetRange("MRC Interface", true);
+        TransferOrder.SetRange("MRC Interface Completed", false);
+        TransferOrder.SetFilter("Transfer-from Code", '<>%1', '');
+        TransferOrder.SetFilter("Transfer-to Code", '<>%1', '');
+        if TransferOrder.FindSet() then
+            repeat
+                if TransferOrder.TransferLinesExist() then
+                    InterfaceTransferToPDA(TransferOrder);
+            until TransferOrder.Next() = 0;
+    end;
+
+    /// <summary>
     /// InterfaceItemJournalToPDA.
     /// </summary>
     /// <param name="ItemJournal">Record "Item Journal Line".</param>
@@ -16,35 +63,36 @@ codeunit 70000 "MRC Func"
         ltDocumentType: Enum "MRC Interface Document Type";
         DicBatch: Dictionary of [code[20], List of [Integer]];
         ListOfInteger: List of [Integer];
+        ltDirection: Option "Inbound","Outbound";
     begin
         CLEAR(ltJsonObject);
         ltItem.GET(ItemJournal."Item No.");
-        ltJsonObject.Add('template_name', itemJournal."Journal Template Name");
-        ltJsonObject.Add('batch_name', itemJournal."Journal Batch Name");
-        ltJsonObject.Add('posting_date', itemJournal."Posting Date");
-        ltJsonObject.Add('entry_type', format(itemJournal."Entry Type"));
-        ltJsonObject.Add('line_no', itemJournal."Line No.");
-        ltJsonObject.Add('document_no', itemJournal."Document No.");
-        ltJsonObject.Add('item_no', itemJournal."Item No.");
+        ltJsonObject.Add('templateName', itemJournal."Journal Template Name");
+        ltJsonObject.Add('batchName', itemJournal."Journal Batch Name");
+        ltJsonObject.Add('postingDate', itemJournal."Posting Date");
+        ltJsonObject.Add('entryType', format(itemJournal."Entry Type"));
+        ltJsonObject.Add('lineNo', itemJournal."Line No.");
+        ltJsonObject.Add('documentNo', itemJournal."Document No.");
+        ltJsonObject.Add('itemNo', itemJournal."Item No.");
         ltJsonObject.Add('description', itemJournal.Description);
-        ltJsonObject.Add('description_th', ltItem."MRC Description TH");
-        ltJsonObject.Add('search_description', ltItem."Search Description");
+        ltJsonObject.Add('descriptionTh', ltItem."MRC Description TH");
+        ltJsonObject.Add('searchDescription', ltItem."Search Description");
         ltJsonObject.Add('address', itemJournal."MRC Address");
         ltJsonObject.Add('quantity', itemJournal.Quantity);
         ltJsonObject.Add('uom', itemJournal."Unit of Measure Code");
-        ltJsonObject.Add('location_code', itemJournal."Location Code");
-        ltJsonObject.Add('shipto_name', itemJournal."MRC Ship-to Name");
-        ltJsonObject.Add('shipto_address', itemJournal."MRC Ship-to Address");
-        ltJsonObject.Add('shipto_district', itemJournal."MRC Ship-to District");
-        ltJsonObject.Add('shipto_postcode', itemJournal."MRC Ship-to Post Code");
-        ltJsonObject.Add('shipto_mobileno', itemJournal."MRC Ship-to Mobile No.");
-        ltJsonObject.Add('shipto_phoneno', itemJournal."MRC Ship-to Phone No.");
-        ltJsonObject.Add('shipment_date', itemJournal."MRC Shipment Date");
-        ltJsonObject.Add('shipping_agent', itemJournal."MRC Shipping Agent");
+        ltJsonObject.Add('locationCode', itemJournal."Location Code");
+        ltJsonObject.Add('shiptoName', itemJournal."MRC Ship-to Name");
+        ltJsonObject.Add('shiptoAddress', itemJournal."MRC Ship-to Address");
+        ltJsonObject.Add('shiptoDistrict', itemJournal."MRC Ship-to District");
+        ltJsonObject.Add('shiptoPostcode', itemJournal."MRC Ship-to Post Code");
+        ltJsonObject.Add('shiptoMobileno', itemJournal."MRC Ship-to Mobile No.");
+        ltJsonObject.Add('shiptoPhoneno', itemJournal."MRC Ship-to Phone No.");
+        ltJsonObject.Add('shipmentDate', itemJournal."MRC Shipment Date");
+        ltJsonObject.Add('shippingAgent', itemJournal."MRC Shipping Agent");
         ListOfInteger.Add(itemJournal."Line No.");
         DicBatch.Add(itemJournal."Journal Batch Name", ListOfInteger);
         ltJsonObject.WriteTo(Result);
-        CallWebService(ltDocumentType::"Item Journal", Result, ItemJournal."Journal Template Name", DicBatch);
+        CallWebService(ltDocumentType::"Item Journal", Result, ItemJournal."Journal Template Name", DicBatch, ltDirection::Outbound);
     end;
 
     /// <summary>
@@ -61,6 +109,7 @@ codeunit 70000 "MRC Func"
         ltDocumentType: Enum "MRC Interface Document Type";
         DicBatch: Dictionary of [code[20], List of [Integer]];
         ListOfInteger: List of [Integer];
+        ltDirection: Option "Inbound","Outbound";
     begin
         ltJsonObject.Add('no', pTranferOrder."No.");
         ltJsonObject.Add('transferfromCode', pTranferOrder."Transfer-from Code");
@@ -88,7 +137,7 @@ codeunit 70000 "MRC Func"
             repeat
                 CLEAR(ltJsonObjectLine);
                 ltITem.GET(ltTransferLine."Item No.");
-                ltJsonObjectLine.Add('line_no', ltTransferLine."Line No.");
+                ltJsonObjectLine.Add('lineno', ltTransferLine."Line No.");
                 ltJsonObjectLine.Add('documentNo', ltTransferLine."Document No.");
                 ltJsonObjectLine.Add('itemNo', ltTransferLine."Item No.");
                 ltJsonObjectLine.Add('description', ltTransferLine.Description);
@@ -102,27 +151,29 @@ codeunit 70000 "MRC Func"
         ltJsonObject.WriteTo(Result);
         ListOfInteger.Add(10000);
         DicBatch.Add(pTranferOrder."No.", ListOfInteger);
-        CallWebService(ltDocumentType::Transfer, Result, '', DicBatch);
+        CallWebService(ltDocumentType::Transfer, Result, '', DicBatch, ltDirection::Outbound);
     end;
 
-    local procedure CallWebService(pDocumentType: Enum "MRC Interface Document Type"; pPayload: Text; pJournalTemplate: code[10]; pDicBatch: Dictionary of [code[20], List of [Integer]])
+    local procedure CallWebService(pActionPage: Enum "MRC Interface Document Type"; pPayload: Text; pJournalTemplate: code[10]; pDicBatch: Dictionary of [code[20], List of [Integer]]; pDirection: Option "Inbound","Outbound")
     var
-        ltGeneralSetup: Record "General Ledger Setup";
+        ltInventorySetup: Record "Inventory Setup";
         JsonMgt: Codeunit "JSON Management";
         gvHttpHeadersContent, contentHeaders : HttpHeaders;
         gvHttpResponseMessage: HttpResponseMessage;
         gvHttpClient: HttpClient;
         gvHttpContent: HttpContent;
         ResponseText: Text;
-        Url, ltBearer : Text;
+        ltBearer: Text;
+        Url: text[250];
+        ltMethodType: Option " ","Insert","Update","Delete";
     begin
-        ltGeneralSetup.GET();
-        if pDocumentType = pDocumentType::Transfer then begin
-            ltGeneralSetup.TestField("MRC To PDA URL (Transfer)");
-            Url := ltGeneralSetup."MRC To PDA URL (Transfer)";
+        ltInventorySetup.GET();
+        if pActionPage = pActionPage::Transfer then begin
+            ltInventorySetup.TestField("MRC To PDA URL (Transfer)");
+            Url := ltInventorySetup."MRC To PDA URL (Transfer)";
         end else begin
-            ltGeneralSetup.TestField("MRC To PDA URL (Item Journal)");
-            Url := ltGeneralSetup."MRC To PDA URL (Item Journal)";
+            ltInventorySetup.TestField("MRC To PDA URL (Item Journal)");
+            Url := ltInventorySetup."MRC To PDA URL (Item Journal)";
         end;
         gvHttpHeadersContent := gvHttpClient.DefaultRequestHeaders();
         gvHttpContent.WriteFrom(pPayload);
@@ -134,63 +185,69 @@ codeunit 70000 "MRC Func"
         gvHttpResponseMessage.Content.ReadAs(ResponseText);
         JsonMgt.InitializeObject(ResponseText);
         if (gvHttpResponseMessage.IsSuccessStatusCode()) and (gvHttpResponseMessage.HttpStatusCode() = 200) then
-            InsertToInterfaceLog(0, pDocumentType, pJournalTemplate, pDicBatch, JsonMgt.GetValue('$.PDA_Entry_Ref'), '', pPayload)
+            InsertToInterfaceLog(0, pActionPage, pJournalTemplate, pDicBatch, JsonMgt.GetValue('$.PDA_Entry_Ref'), pPayload, pDirection, ResponseText, Url, ltMethodType::Insert)
         else
-            InsertToInterfaceLog(1, pDocumentType, pJournalTemplate, pDicBatch, JsonMgt.GetValue('$.PDA_Entry_Ref'), JsonMgt.GetValue('$.Remark'), pPayload);
+            InsertToInterfaceLog(1, pActionPage, pJournalTemplate, pDicBatch, JsonMgt.GetValue('$.PDA_Entry_Ref'), pPayload, pDirection, ResponseText, Url, ltMethodType::" ");
 
     end;
 
-    local procedure InsertToInterfaceLog(pStatus: Option "Success","Failed"; pDocumentType: Enum "MRC Interface Document Type"; pJournalTemplate: code[10]; pDicBatch: Dictionary of [code[20], List of [Integer]];
+    local procedure InsertToInterfaceLog(pStatus: Option "Success","Failed"; pActionPage: Enum "MRC Interface Document Type"; pJournalTemplate: code[10]; pDicBatch: Dictionary of [code[20], List of [Integer]];
                                                                                                 pPDA_Entry_Ref: text;
-                                                                                                pRemark: text;
-                                                                                                pPayload: Text)
+                                                                                                pPayload: Text; pDirection: Option "Inbound","Outbound"; pResponse: Text; pInterfacePath: Text[250]; pMethodType: Option " ","Insert","Update","Delete")
     var
         InterfaceLogEntry: Record "MRC Interface Log Entry";
         ltTransferHeader: Record "Transfer Header";
         ltITemJournalLine: Record "Item Journal Line";
-        ltOutStram: OutStream;
+        ltOutStram, ltOutStramResponse : OutStream;
         ltRefPDA: Integer;
         DocNo: Code[20];
         ltLineLists: List of [Integer];
         LtLineNo: Integer;
-        ltDicBatch: Dictionary of [code[20], List of [Integer]];
     begin
+        ltRefPDA := 0;
+        if pPDA_Entry_Ref.TrimEnd() <> '' then
+            Evaluate(ltRefPDA, pPDA_Entry_Ref);
         foreach DocNo in pDicBatch.Keys() do begin
-            ltDicBatch.Get(DocNo, ltLineLists);
+            pDicBatch.Get(DocNo, ltLineLists);
             foreach LtLineNo in ltLineLists do begin
                 InterfaceLogEntry.Init();
-                InterfaceLogEntry."Transaction ID" := InterfaceLogEntry.GetLastTransactionID();
-                InterfaceLogEntry."Document Type" := pDocumentType;
+                InterfaceLogEntry."Entry No." := InterfaceLogEntry.GetLastTransactionID();
+                InterfaceLogEntry."Action Page" := pActionPage;
+                InterfaceLogEntry."Interface Path" := pInterfacePath;
                 InterfaceLogEntry.Status := pStatus;
-                Evaluate(ltRefPDA, pPDA_Entry_Ref);
                 InterfaceLogEntry."PDA Entry Ref." := ltRefPDA;
-                InterfaceLogEntry.Remark := COPYSTR(pRemark, 1, 2047);
+                InterfaceLogEntry.Direction := pDirection;
+                InterfaceLogEntry."Method Type" := pMethodType;
                 InterfaceLogEntry.Insert();
-                if pDocumentType = pDocumentType::"Item Journal" then begin
+                if pActionPage = pActionPage::"Item Journal" then begin
                     ltITemJournalLine.GET(pJournalTemplate, DocNo, LtLineNo);
+                    InterfaceLogEntry."Primary Key Caption" := COPYSTR(ltITemJournalLine.FieldCaption("Journal Template Name") + ',' + ltITemJournalLine.FieldCaption("Journal Batch Name") + ',' + ltITemJournalLine.FieldCaption("Line No."), 1, 250);
+                    InterfaceLogEntry."Primary Key 1" := pJournalTemplate;
+                    InterfaceLogEntry."Primary Key 2" := DocNo;
+                    InterfaceLogEntry."Primary Key 3" := format(LtLineNo);
                     InterfaceLogEntry."Document No." := ltITemJournalLine."Document No.";
-                    InterfaceLogEntry."Journal Batch Name" := ltITemJournalLine."Journal Batch Name";
-                    if pStatus = pStatus::Success then begin
+                    if pStatus = pStatus::Success then
                         ltITemJournalLine."MRC Interface Completed" := true;
-                        ltITemJournalLine."MRC Send DateTime" := CurrentDateTime();
-                    end;
-                    ltITemJournalLine."MRC Transaction ID" := InterfaceLogEntry."Transaction ID";
+                    ltITemJournalLine."MRC Send DateTime" := CurrentDateTime();
                     ltITemJournalLine.Modify();
                 end else begin
+                    InterfaceLogEntry."Primary Key Caption" := COPYSTR(ltTransferHeader.FieldCaption("No."), 1, 250);
                     ltTransferHeader.GET(DocNo);
+                    InterfaceLogEntry."Primary Key 1" := ltTransferHeader."No.";
                     InterfaceLogEntry."Document No." := ltTransferHeader."No.";
-                    if pStatus = pStatus::Success then begin
+                    if pStatus = pStatus::Success then
                         ltTransferHeader."MRC Interface Completed" := true;
-                        ltTransferHeader."MRC Send DateTime" := CurrentDateTime();
-                    end;
-                    ltTransferHeader."MRC Transaction ID" := InterfaceLogEntry."Transaction ID";
+                    ltTransferHeader."MRC Send DateTime" := CurrentDateTime();
                     ltTransferHeader.Modify();
                 end;
-                InterfaceLogEntry."Json Format".CreateOutStream(ltOutStram, TextEncoding::UTF8);
+                CLEAR(InterfaceLogEntry."Json Log");
+                Clear(InterfaceLogEntry."Response Log");
+                InterfaceLogEntry."Json Log".CreateOutStream(ltOutStram, TextEncoding::UTF8);
                 ltOutStram.WriteText(pPayload);
+                InterfaceLogEntry."Response Log".CreateOutStream(ltOutStramResponse, TextEncoding::UTF8);
+                ltOutStramResponse.WriteText(pResponse);
                 InterfaceLogEntry.Modify();
             end;
-
         end;
     end;
 
@@ -262,6 +319,22 @@ codeunit 70000 "MRC Func"
         NewItemLedgEntry."MRC Transaction ID" := ItemJournalLine."MRC Transaction ID";
         NewItemLedgEntry."MRC Address" := ItemJournalLine."MRC Address";
         NewItemLedgEntry."MRC Original Quantity" := ItemJournalLine."MRC Original Quantity";
+    end;
+
+    [EventSubscriber(ObjectType::Codeunit, Codeunit::"Item Jnl.-Post Batch", 'OnBeforeUpdateDeleteLines', '', true, true)]
+    local procedure "InsertPostedItemJournalLines"(var ItemJournalLine: Record "Item Journal Line")
+    var
+        PostedItemJournalLines: Record "MRC Posted Item Journal Line";
+        ItemJnlLine2: Record "Item Journal Line";
+    begin
+        ItemJnlLine2.COPYFILTERS(ItemJournalLine);
+        ItemJnlLine2.FINDSET();
+        REPEAT
+            PostedItemJournalLines.INIT();
+            PostedItemJournalLines.TRANSFERFIELDS(ItemJnlLine2);
+            PostedItemJournalLines."Entry No." := PostedItemJournalLines."LastPostedEntryNo"();
+            PostedItemJournalLines.INSERT(true);
+        until ItemJnlLine2.next() = 0;
     end;
 
     [EventSubscriber(ObjectType::Table, Database::"Item Journal Line", 'OnAfterSetupNewLine', '', True, true)]
