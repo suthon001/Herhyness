@@ -52,14 +52,16 @@ tableextension 70002 "MRC Transfer Header" extends "Transfer Header"
             DataClassification = CustomerContent;
             Editable = false;
         }
-        field(70009; "MRC Transaction ID"; Integer)
-        {
-            Caption = 'Transaction ID';
-            Editable = false;
-        }
+
         field(70010; "MRC Interface"; Boolean)
         {
             Caption = 'Interface';
+            DataClassification = CustomerContent;
+            Editable = false;
+        }
+        field(70011; "BC_Entry_Ref"; Integer)
+        {
+            Caption = 'BC_Entry_Ref';
             DataClassification = CustomerContent;
             Editable = false;
         }

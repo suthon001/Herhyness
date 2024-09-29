@@ -215,7 +215,6 @@ codeunit 70000 "MRC Func"
                 InterfaceLogEntry."Action Page" := pActionPage;
                 InterfaceLogEntry."Interface Path" := pInterfacePath;
                 InterfaceLogEntry.Status := pStatus;
-                InterfaceLogEntry."PDA Entry Ref." := ltRefPDA;
                 InterfaceLogEntry.Direction := pDirection;
                 InterfaceLogEntry."Method Type" := pMethodType;
                 InterfaceLogEntry.Insert();
@@ -228,6 +227,7 @@ codeunit 70000 "MRC Func"
                     InterfaceLogEntry."Document No." := ltITemJournalLine."Document No.";
                     if pStatus = pStatus::Success then
                         ltITemJournalLine."MRC Interface Completed" := true;
+                    ltITemJournalLine.BC_Entry_Ref := InterfaceLogEntry."Entry No.";
                     ltITemJournalLine."MRC Send DateTime" := CurrentDateTime();
                     ltITemJournalLine.Modify();
                 end else begin
@@ -235,9 +235,11 @@ codeunit 70000 "MRC Func"
                     ltTransferHeader.GET(DocNo);
                     InterfaceLogEntry."Primary Key 1" := ltTransferHeader."No.";
                     InterfaceLogEntry."Document No." := ltTransferHeader."No.";
+
                     if pStatus = pStatus::Success then
                         ltTransferHeader."MRC Interface Completed" := true;
                     ltTransferHeader."MRC Send DateTime" := CurrentDateTime();
+                    ltTransferHeader.BC_Entry_Ref := InterfaceLogEntry."Entry No.";
                     ltTransferHeader.Modify();
                 end;
                 CLEAR(InterfaceLogEntry."Json Log");
@@ -261,7 +263,6 @@ codeunit 70000 "MRC Func"
         TransferReceiptHeader."MRC Ship-to Name" := TransferHeader."MRC Ship-to Name";
         TransferReceiptHeader."MRC Ship-to Phone No." := TransferHeader."MRC Ship-to Phone No.";
         TransferReceiptHeader."MRC Ship-to Post Code" := TransferHeader."MRC Ship-to Post Code";
-        TransferReceiptHeader."MRC Transaction ID" := TransferHeader."MRC Transaction ID";
     end;
 
     [EventSubscriber(ObjectType::Table, Database::"Transfer Shipment Header", 'OnAfterCopyFromTransferHeader', '', false, false)]
@@ -274,7 +275,7 @@ codeunit 70000 "MRC Func"
         TransferShipmentHeader."MRC Ship-to Name" := TransferHeader."MRC Ship-to Name";
         TransferShipmentHeader."MRC Ship-to Phone No." := TransferHeader."MRC Ship-to Phone No.";
         TransferShipmentHeader."MRC Ship-to Post Code" := TransferHeader."MRC Ship-to Post Code";
-        TransferShipmentHeader."MRC Transaction ID" := TransferHeader."MRC Transaction ID";
+        TransferShipmentHeader.BC_Entry_Ref := TransferHeader.BC_Entry_Ref;
     end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"TransferOrder-Post Shipment", 'OnAfterCreateItemJnlLine', '', false, false)]
@@ -287,8 +288,7 @@ codeunit 70000 "MRC Func"
         ItemJournalLine."MRC Ship-to Name" := TransferShipmentHeader."MRC Ship-to Name";
         ItemJournalLine."MRC Ship-to Phone No." := TransferShipmentHeader."MRC Ship-to Phone No.";
         ItemJournalLine."MRC Ship-to Post Code" := TransferShipmentHeader."MRC Ship-to Post Code";
-        ItemJournalLine."MRC Transaction ID" := TransferShipmentHeader."MRC Transaction ID";
-
+        ItemJournalLine.BC_Entry_Ref := TransferShipmentHeader.BC_Entry_Ref;
     end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"TransferOrder-Post Receipt", 'OnBeforePostItemJournalLine', '', false, false)]
@@ -301,7 +301,7 @@ codeunit 70000 "MRC Func"
         ItemJournalLine."MRC Ship-to Name" := TransferReceiptHeader."MRC Ship-to Name";
         ItemJournalLine."MRC Ship-to Phone No." := TransferReceiptHeader."MRC Ship-to Phone No.";
         ItemJournalLine."MRC Ship-to Post Code" := TransferReceiptHeader."MRC Ship-to Post Code";
-        ItemJournalLine."MRC Transaction ID" := TransferReceiptHeader."MRC Transaction ID";
+        ItemJournalLine.BC_Entry_Ref := TransferReceiptHeader.BC_Entry_Ref;
     end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Item Jnl.-Post Line", 'OnAfterInitItemLedgEntry', '', false, false)]
@@ -316,9 +316,9 @@ codeunit 70000 "MRC Func"
         NewItemLedgEntry."MRC Ship-to Post Code" := ItemJournalLine."MRC Ship-to Post Code";
         NewItemLedgEntry."MRC Shipment Date" := ItemJournalLine."MRC Shipment Date";
         NewItemLedgEntry."MRC Shipping Agent" := ItemJournalLine."MRC Shipping Agent";
-        NewItemLedgEntry."MRC Transaction ID" := ItemJournalLine."MRC Transaction ID";
         NewItemLedgEntry."MRC Address" := ItemJournalLine."MRC Address";
         NewItemLedgEntry."MRC Original Quantity" := ItemJournalLine."MRC Original Quantity";
+        NewItemLedgEntry.BC_Entry_Ref := ItemJournalLine.BC_Entry_Ref;
     end;
 
     [EventSubscriber(ObjectType::Codeunit, Codeunit::"Item Jnl.-Post Batch", 'OnBeforeUpdateDeleteLines', '', true, true)]

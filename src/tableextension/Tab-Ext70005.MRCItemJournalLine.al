@@ -63,11 +63,7 @@ tableextension 70005 "MRC Item Journal Line" extends "Item Journal Line"
             DataClassification = CustomerContent;
             Editable = false;
         }
-        field(70011; "MRC Transaction ID"; Integer)
-        {
-            Caption = 'Transaction ID';
-            Editable = false;
-        }
+
         field(70012; "MRC Interface"; Boolean)
         {
             Caption = 'Interface';
@@ -98,6 +94,12 @@ tableextension 70005 "MRC Item Journal Line" extends "Item Journal Line"
         {
             Caption = 'Address';
             DataClassification = CustomerContent;
+        }
+        field(70017; "BC_Entry_Ref"; Integer)
+        {
+            Caption = 'BC_Entry_Ref';
+            DataClassification = CustomerContent;
+            Editable = false;
         }
 
     }

@@ -40,10 +40,6 @@ page 70002 "MRC Interface Log Entries"
                 {
                     ToolTip = 'Specifies the value of the Direction field.', Comment = '%';
                 }
-                field("PDA Entry Ref."; Rec."PDA Entry Ref.")
-                {
-                    ToolTip = 'Specifies the value of the PDA Entry Ref. field.', Comment = '%';
-                }
                 field(Status; Rec.Status)
                 {
                     ToolTip = 'Specifies the value of the Status field.', Comment = '%';

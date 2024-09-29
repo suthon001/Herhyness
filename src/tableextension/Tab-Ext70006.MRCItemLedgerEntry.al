@@ -66,5 +66,11 @@ tableextension 70006 "MRC Item Ledger Entry" extends "Item Ledger Entry"
             Caption = 'Address';
             DataClassification = CustomerContent;
         }
+        field(70013; "BC_Entry_Ref"; Integer)
+        {
+            Caption = 'BC_Entry_Ref';
+            DataClassification = CustomerContent;
+            Editable = false;
+        }
     }
 }

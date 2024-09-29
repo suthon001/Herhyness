@@ -31,10 +31,6 @@ table 70000 "MRC Interface Log Entry"
             OptionMembers = "Inbound","Outbound";
             OptionCaption = 'Inbound,Outbound';
         }
-        field(5; "PDA Entry Ref."; Integer)
-        {
-            Caption = 'PDA Entry Ref.';
-        }
         field(6; "Status"; Option)
         {
             Caption = 'Status';

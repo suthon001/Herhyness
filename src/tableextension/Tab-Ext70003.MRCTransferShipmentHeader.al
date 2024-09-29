@@ -40,9 +40,10 @@ tableextension 70003 "MRC Transfer Shipment Header" extends "Transfer Shipment H
             Caption = 'Direction';
             DataClassification = CustomerContent;
         }
-        field(70009; "MRC Transaction ID"; Integer)
+        field(70011; "BC_Entry_Ref"; Integer)
         {
-            Caption = 'Transaction ID';
+            Caption = 'BC_Entry_Ref';
+            DataClassification = CustomerContent;
             Editable = false;
         }
     }

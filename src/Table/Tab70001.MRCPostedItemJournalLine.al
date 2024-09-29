@@ -870,11 +870,7 @@ table 70001 "MRC Posted Item Journal Line"
             DataClassification = CustomerContent;
             Editable = false;
         }
-        field(70011; "MRC Transaction ID"; Integer)
-        {
-            Caption = 'Transaction ID';
-            Editable = false;
-        }
+
         field(70012; "MRC Interface"; Boolean)
         {
             Caption = 'Interface';
@@ -901,6 +897,12 @@ table 70001 "MRC Posted Item Journal Line"
         {
             Caption = 'Address';
             DataClassification = CustomerContent;
+        }
+        field(70017; "BC_Entry_Ref"; Integer)
+        {
+            Caption = 'BC_Entry_Ref';
+            DataClassification = CustomerContent;
+            Editable = false;
         }
         field(80100; "Entry No."; Integer)
         {
