@@ -185,28 +185,23 @@ codeunit 70000 "MRC Func"
         gvHttpResponseMessage.Content.ReadAs(ResponseText);
         JsonMgt.InitializeObject(ResponseText);
         if (gvHttpResponseMessage.IsSuccessStatusCode()) and (gvHttpResponseMessage.HttpStatusCode() = 200) then
-            InsertToInterfaceLog(0, pActionPage, pJournalTemplate, pDicBatch, JsonMgt.GetValue('$.PDA_Entry_Ref'), pPayload, pDirection, ResponseText, Url, ltMethodType::Insert)
+            InsertToInterfaceLog(0, pActionPage, pJournalTemplate, pDicBatch, pPayload, pDirection, ResponseText, Url, ltMethodType::Insert)
         else
-            InsertToInterfaceLog(1, pActionPage, pJournalTemplate, pDicBatch, JsonMgt.GetValue('$.PDA_Entry_Ref'), pPayload, pDirection, ResponseText, Url, ltMethodType::" ");
+            InsertToInterfaceLog(1, pActionPage, pJournalTemplate, pDicBatch, pPayload, pDirection, ResponseText, Url, ltMethodType::" ");
 
     end;
 
     local procedure InsertToInterfaceLog(pStatus: Option "Success","Failed"; pActionPage: Enum "MRC Interface Document Type"; pJournalTemplate: code[10]; pDicBatch: Dictionary of [code[20], List of [Integer]];
-                                                                                                pPDA_Entry_Ref: text;
                                                                                                 pPayload: Text; pDirection: Option "Inbound","Outbound"; pResponse: Text; pInterfacePath: Text[250]; pMethodType: Option " ","Insert","Update","Delete")
     var
         InterfaceLogEntry: Record "MRC Interface Log Entry";
         ltTransferHeader: Record "Transfer Header";
         ltITemJournalLine: Record "Item Journal Line";
         ltOutStram, ltOutStramResponse : OutStream;
-        ltRefPDA: Integer;
         DocNo: Code[20];
         ltLineLists: List of [Integer];
         LtLineNo: Integer;
     begin
-        ltRefPDA := 0;
-        if pPDA_Entry_Ref.TrimEnd() <> '' then
-            Evaluate(ltRefPDA, pPDA_Entry_Ref);
         foreach DocNo in pDicBatch.Keys() do begin
             pDicBatch.Get(DocNo, ltLineLists);
             foreach LtLineNo in ltLineLists do begin
